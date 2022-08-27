@@ -11,11 +11,7 @@ import sys
 import os
 import time
 
-import traceback
-
-import G2Paths
-from G2IniParams import G2IniParams
-from senzing import G2Config, G2ConfigMgr, G2Diagnostic, G2Engine, G2Exception, G2Hasher, G2ModuleGenericException, G2Product, G2EngineFlags
+from senzing import G2Config, G2ConfigMgr, G2Engine, G2Exception, G2EngineFlags
 
 def process_entity(engine, entity_id):
   try:
@@ -29,6 +25,7 @@ def process_entity(engine, entity_id):
   except Exception as err:
     print(err, file=sys.stderr)
     raise
+
 
 def process_redo(engine):
   try:
@@ -54,23 +51,25 @@ def process_line(engine, line):
     print(err, file=sys.stderr)
     raise
 
+
+
 try:
   parser = argparse.ArgumentParser()
   parser.add_argument('fileToProcess', default=None)
-  parser.add_argument('-c', '--iniFile', dest='iniFile', default='', help='name of a G2Module.ini file to use', nargs=1)
   parser.add_argument('-o', '--outFile', dest='outFile', default='load_delta.json', help='name of output file to use', nargs=1)
   parser.add_argument('-i', '--infoFile', dest='infoFile', default='/tmp/withInfo.json', help='name of temporary withinfo file to use', nargs=1)
   parser.add_argument('-t', '--debugTrace', dest='debugTrace', action='store_true', default=False, help='output debug trace information')
   args = parser.parse_args()
 
-  ini_file_name = pathlib.Path(G2Paths.get_G2Module_ini_path()) if not args.iniFile else pathlib.Path(args.iniFile[0]).resolve()
-  G2Paths.check_file_exists_and_readable(ini_file_name)
-
-  g2module_params = G2IniParams().getJsonINIParams(ini_file_name)
+  engine_config = os.getenv('SENZING_ENGINE_CONFIGURATION_JSON')
+  if not engine_config:
+    print('The environment variable SENZING_ENGINE_CONFIGURATION_JSON must be set with a proper JSON configuration.', file=sys.stderr)
+    print('Please see https://senzing.zendesk.com/hc/en-us/articles/360038774134-G2Module-Configuration-and-the-Senzing-API', file=sys.stderr)
+    exit(-1)
 
   # Initialize the G2Engine
   g2 = G2Engine()
-  g2.init("g2_incremental_withinfo",g2module_params,args.debugTrace)
+  g2.init("g2_incremental_withinfo",engine_config,args.debugTrace)
   prevTime = time.time()
 
   with open(args.fileToProcess, 'r') as fp:
@@ -79,7 +78,8 @@ try:
     max_workers = None
 
     if os.path.isfile(args.infoFile):
-      print(f'Temporary WithInfo file {args.infoFile} already exists.  This may be from a failed run.  Make sure these entities are processed and remove the file before re-running', file=sys.stderr)
+      print(f'Temporary WithInfo file {args.infoFile} already exists.  This may be from a failed run.', file=sys.stderr)
+      print('Make sure these entities are processed and remove the file before re-running', file=sys.stderr)
       exit(-1)
       
     fpWithInfo = open(args.infoFile, 'w+')
@@ -143,14 +143,14 @@ try:
                 numLines += 1
 
                 if numLines%10000 == 0:
-                    nowTime = time.time()
-                    speed = int(10000 / (nowTime-prevTime))
-                    print(f'Processed {numLines} redo, {speed} records per second')
-                    prevTime=nowTime
+                  nowTime = time.time()
+                  speed = int(10000 / (nowTime-prevTime))
+                  print(f'Processed {numLines} redo, {speed} records per second')
+                  prevTime=nowTime
                 if numLines%100000 == 0:
-                    response = bytearray()
-                    g2.stats(response)
-                    print(f'\n{response.decode()}\n')
+                  response = bytearray()
+                  g2.stats(response)
+                  print(f'\n{response.decode()}\n')
 
         print(f'Processed total of {numLines} redo')
 
@@ -180,39 +180,38 @@ try:
 
           done, _ = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
           for fut in done:
-              result = fut.result()
-              processed_entity_id = futures.pop(fut)
+            result = fut.result()
+            processed_entity_id = futures.pop(fut)
 
-              if result:
-                print(result.decode(), file=fpOut)
-              else:
-                print('{ENTITY":{"ENTITY_ID"' + str(processed_entity_id) + ',"RECORDS":[]}}', file=fpOut)
+            if result:
+              print(result.decode(), file=fpOut)
+            else:
+              print('{ENTITY":{"ENTITY_ID"' + str(processed_entity_id) + ',"RECORDS":[]}}', file=fpOut)
  
-              numLines += 1
-              if numLines%10000 == 0:
-                  nowTime = time.time()
-                  speed = int(10000 / (nowTime-prevTime))
-                  print(f'Processed {numLines} withinfo, {speed} records per second')
-                  prevTime=nowTime
-              if numLines%100000 == 0:
-                  response = bytearray()
-                  g2.stats(response)
-                  print(f'\n{response.decode()}\n')
-
+            numLines += 1
+            if numLines%10000 == 0:
+              nowTime = time.time()
+              speed = int(10000 / (nowTime-prevTime))
+              print(f'Processed {numLines} withinfo, {speed} records per second')
+              prevTime=nowTime
+            if numLines%100000 == 0:
+              response = bytearray()
+              g2.stats(response)
+              print(f'\n{response.decode()}\n')
 
               if unique_entities:
                 entity_id = unique_entities.pop()
                 futures[executor.submit(process_entity, g2, entity_id)] = entity_id
 
         print(f'Processed total of {numLines} withinfo')
+        fpInfo.close()
+        os.unlink(args.infoFile)
 
 
       except Exception as err:
-          print(f'Shutting down due to error: {err}', file=sys.stderr)
-          traceback.print_exception(*sys.exc_info())
-          traceback.print_exc(err)
-          executor.shutdown()
-          exit(-1)
+        print(f'Shutting down due to error: {err}', file=sys.stderr)
+        executor.shutdown()
+        exit(-1)
 
 except Exception as err:
   print(err, file=sys.stderr)
