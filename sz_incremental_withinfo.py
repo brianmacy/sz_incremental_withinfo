@@ -56,8 +56,8 @@ def process_line(engine, line):
 try:
   parser = argparse.ArgumentParser()
   parser.add_argument('fileToProcess', default=None)
-  parser.add_argument('-o', '--outFile', dest='outFile', default='load_delta.json', help='name of output file to use', nargs=1)
-  parser.add_argument('-i', '--infoFile', dest='infoFile', default='/tmp/withInfo.json', help='name of temporary withinfo file to use', nargs=1)
+  parser.add_argument('-o', '--outFile', dest='outFile', default='load_delta.json', help='name of output file to use')
+  parser.add_argument('-i', '--infoFile', dest='infoFile', default='/tmp/withInfo.json', help='name of temporary withinfo file to use')
   parser.add_argument('-t', '--debugTrace', dest='debugTrace', action='store_true', default=False, help='output debug trace information')
   args = parser.parse_args()
 
@@ -204,8 +204,8 @@ try:
                 futures[executor.submit(process_entity, g2, entity_id)] = entity_id
 
         print(f'Processed total of {numLines} withinfo')
-        fpInfo.close()
-        os.unlink(args.infoFile)
+        fpWithInfo.close()
+        os.remove(args.infoFile)
 
 
       except Exception as err:
