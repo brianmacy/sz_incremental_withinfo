@@ -48,7 +48,7 @@ def process_line(engine, line):
     engine.addRecordWithInfo(record['DATA_SOURCE'],record['RECORD_ID'],line, response)
     return response
   except Exception as err:
-    print(err, file=sys.stderr)
+    print(f'{err} [{line}]', file=sys.stderr)
     raise
 
 
@@ -96,27 +96,27 @@ try:
           # Wish I could use as_completed but, understandbly, it doesn't like the modification of futures
           # as it is being iterated on.  It kind of works for a while and then falls over.
           for fut in done: #concurrent.futures.as_completed(futures):
-              result = fut.result()
-              futures.pop(fut)
+            result = fut.result()
+            futures.pop(fut)
 
-              if result:
-                print(result.decode(), file=fpWithInfo)
+            if result:
+              print(result.decode(), file=fpWithInfo)
  
-              numLines += 1
-              if numLines%10000 == 0:
-                  nowTime = time.time()
-                  speed = int(10000 / (nowTime-prevTime))
-                  print(f'Processed {numLines} adds, {speed} records per second')
-                  prevTime=nowTime
-              if numLines%100000 == 0:
-                  response = bytearray()
-                  g2.stats(response)
-                  print(f'\n{response.decode()}\n')
+            numLines += 1
+            if numLines%10000 == 0:
+              nowTime = time.time()
+              speed = int(10000 / (nowTime-prevTime))
+              print(f'Processed {numLines} adds, {speed} records per second')
+              prevTime=nowTime
+            if numLines%100000 == 0:
+              response = bytearray()
+              g2.stats(response)
+              print(f'\n{response.decode()}\n')
 
 
-              line = fp.readline()
-              if line:
-                futures[executor.submit(process_line, g2, line)] = line
+            line = fp.readline()
+            if line:
+              futures[executor.submit(process_line, g2, line)] = line
 
         print(f'Processed total of {numLines} adds')
 
@@ -134,23 +134,23 @@ try:
 
           done, _ = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
           for fut in done:
-              result = fut.result()
-              futures.remove(fut)
+            result = fut.result()
+            futures.remove(fut)
 
-              if result:
-                print(result.decode(), file=fpWithInfo)
-                futures.add(executor.submit(process_redo, g2))
-                numLines += 1
+            if result:
+              print(result.decode(), file=fpWithInfo)
+              futures.add(executor.submit(process_redo, g2))
+              numLines += 1
 
-                if numLines%10000 == 0:
-                  nowTime = time.time()
-                  speed = int(10000 / (nowTime-prevTime))
-                  print(f'Processed {numLines} redo, {speed} records per second')
-                  prevTime=nowTime
-                if numLines%100000 == 0:
-                  response = bytearray()
-                  g2.stats(response)
-                  print(f'\n{response.decode()}\n')
+              if numLines%10000 == 0:
+                nowTime = time.time()
+                speed = int(10000 / (nowTime-prevTime))
+                print(f'Processed {numLines} redo, {speed} records per second')
+                prevTime=nowTime
+              if numLines%100000 == 0:
+                response = bytearray()
+                g2.stats(response)
+                print(f'\n{response.decode()}\n')
 
         print(f'Processed total of {numLines} redo')
 
@@ -199,9 +199,9 @@ try:
               g2.stats(response)
               print(f'\n{response.decode()}\n')
 
-              if unique_entities:
-                entity_id = unique_entities.pop()
-                futures[executor.submit(process_entity, g2, entity_id)] = entity_id
+            if unique_entities:
+              entity_id = unique_entities.pop()
+              futures[executor.submit(process_entity, g2, entity_id)] = entity_id
 
         print(f'Processed total of {numLines} withinfo')
         fpWithInfo.close()

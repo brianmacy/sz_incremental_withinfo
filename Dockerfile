@@ -22,6 +22,8 @@ RUN apt-get -y autoremove
 COPY sz_incremental_withinfo.py /app/
 
 ENV PYTHONPATH=/opt/senzing/g2/sdk/python
+ENV LANGUAGE=C
+ENV LC_ALL=C.UTF-8
 
 USER 1001
 
