@@ -22,4 +22,4 @@ In the first two phases it processes the input file in Senzing JSON format (http
 
 # Pre-requisites
 
-You will need a Senzing v3 repository, binary installation, and a JSON configururation to it set in your environment (https://senzing.zendesk.com/hc/en-us/articles/360038774134-G2Module-Configuration-and-the-Senzing-API).  This could be done via the Qucikstart (https://senzing.zendesk.com/hc/en-us/articles/115002408867-Quickstart-Guide) or by setting up a Docker env (https://hub.docker.com/r/senzing/senzingapi-runtime and https://hub.docker.com/r/senzing/init-postgresql).
+You will need a Senzing v3 repository, binary installation, and a JSON configururation to it set in your environment (https://senzing.zendesk.com/hc/en-us/articles/360038774134-G2Module-Configuration-and-the-Senzing-API).  This could be done via the Quickstart (https://senzing.zendesk.com/hc/en-us/articles/115002408867-Quickstart-Guide) or by setting up a Docker env (https://hub.docker.com/r/senzing/senzingapi-runtime and https://hub.docker.com/r/senzing/init-postgresql).
