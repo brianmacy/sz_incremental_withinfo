@@ -19,6 +19,10 @@ This script uses Python futures to parallelize processing.  The G2Engine is thre
 
 In the first two phases it processes the input file in Senzing JSON format (https://senzing.zendesk.com/hc/en-us/articles/231925448-Generic-Entity-Specification-JSON-CSV-Mapping), writes a temporary file of the affected entities, and then reads that temporary file to get the final state of those entities with each entity represented once.
 
+# Running
+```
+docker run --user $UID -it -v $PWD:/data -e SENZING_ENGINE_CONFIGURATION_JSON brian/sz_incremental_withinfo -o /data/delta.json -i /data/tmpinfo.json /data/shuffled_data_to_load.json
+```
 
 # Pre-requisites
 
