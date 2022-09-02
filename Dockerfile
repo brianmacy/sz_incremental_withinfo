@@ -11,13 +11,10 @@ LABEL Name="brain/sz_incremental_withinfo" \
       Version="DEV"
 
 RUN apt-get update \
- && apt-get -y install \
-        python3 python3-pip
-
-RUN python3 -mpip install orjson
-
-RUN apt-get -y remove build-essential python3-pip
-RUN apt-get -y autoremove
+ && apt-get -y install python3 python3-pip \
+ && python3 -mpip install orjson \
+ && apt-get -y remove build-essential python3-pip \
+ && apt-get -y autoremove
 
 COPY sz_incremental_withinfo.py /app/
 
