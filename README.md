@@ -24,6 +24,14 @@ In the first two phases it processes the input file in Senzing JSON format (http
 docker run --user $UID -it -v $PWD:/data -e SENZING_ENGINE_CONFIGURATION_JSON brian/sz_incremental_withinfo -o /data/delta.json -i /data/tmpinfo.json /data/shuffled_data_to_load.json
 ```
 
+# Usage
+usage: sz_incremental_withinfo.py [-h] [-o OUTFILE] [-i INFOFILE] [-t] fileToProcess
+
+ o: output file of changed entities in JSON-lines
+ i: a temporary file for the JSON-lines withInfo messsages in case the process fails part way through
+ t: detailed tracve information from the engine
+ fileToProcess: the actual Senzing JSON-lines file with records to add
+
 # Pre-requisites
 
 You will need a Senzing v3 repository, binary installation, and a JSON configururation to it set in your environment (https://senzing.zendesk.com/hc/en-us/articles/360038774134-G2Module-Configuration-and-the-Senzing-API).  This could be done via the Quickstart (https://senzing.zendesk.com/hc/en-us/articles/115002408867-Quickstart-Guide) or by setting up a Docker env (https://hub.docker.com/r/senzing/senzingapi-runtime and https://hub.docker.com/r/senzing/init-postgresql).
