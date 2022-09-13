@@ -27,10 +27,10 @@ docker run --user $UID -it -v $PWD:/data -e SENZING_ENGINE_CONFIGURATION_JSON br
 # Usage
 usage: sz_incremental_withinfo.py [-h] [-o OUTFILE] [-i INFOFILE] [-t] fileToProcess
 
- o: output file of changed entities in JSON-lines
- i: a temporary file for the JSON-lines withInfo messsages in case the process fails part way through
- t: detailed tracve information from the engine
- fileToProcess: the actual Senzing JSON-lines file with records to add
+- o: output file of changed entities in JSON-lines
+- i: a temporary file for the JSON-lines withInfo messsages in case the process fails part way through
+- t: detailed tracve information from the engine
+- fileToProcess: the actual Senzing JSON-lines file with records to add
 
 # Pre-requisites
 
